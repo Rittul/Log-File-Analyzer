@@ -2,14 +2,22 @@ package com.loganalyzer;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
 public class LogFileAnalyzer {
 
+    // Color codes for CLI
+    public static final String RESET = "\u001B[0m";
+    public static final String RED = "\u001B[31m";
+    public static final String GREEN = "\u001B[32m";
+    public static final String YELLOW = "\u001B[33m";
+
     public static void main(String[] args) {
 
         String logFilePath = "logs/sample.log";
+        String outputFilePath = "output/analysis_report.txt";
 
         int infoCount = 0;
         int warningCount = 0;
@@ -17,33 +25,32 @@ public class LogFileAnalyzer {
 
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter keyword to search (or press Enter to skip): ");
+        System.out.print("Enter keyword (or press Enter to skip): ");
         String keyword = scanner.nextLine();
 
-        System.out.print("Enter start date-time (yyyy-MM-dd HH:mm:ss) or press Enter to skip: ");
+        System.out.print("Enter start date-time (yyyy-MM-dd HH:mm:ss) or press Enter: ");
         String startDate = scanner.nextLine();
 
-        System.out.print("Enter end date-time (yyyy-MM-dd HH:mm:ss) or press Enter to skip: ");
+        System.out.print("Enter end date-time (yyyy-MM-dd HH:mm:ss) or press Enter: ");
         String endDate = scanner.nextLine();
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader(logFilePath));
+            FileWriter writer = new FileWriter(outputFilePath);
+
             String line;
 
             System.out.println("\nFiltered Logs:\n");
+            writer.write("Filtered Logs:\n\n");
 
             while ((line = reader.readLine()) != null) {
 
                 // Count log levels
-                if (line.contains("INFO")) {
-                    infoCount++;
-                } else if (line.contains("WARNING")) {
-                    warningCount++;
-                } else if (line.contains("ERROR")) {
-                    errorCount++;
-                }
+                if (line.contains("INFO")) infoCount++;
+                else if (line.contains("WARNING")) warningCount++;
+                else if (line.contains("ERROR")) errorCount++;
 
-                // Extract date-time from log line
+                // Extract date-time
                 String logDateTime = line.substring(0, 19);
 
                 boolean keywordMatch = keyword.isEmpty() || line.contains(keyword);
@@ -51,19 +58,37 @@ public class LogFileAnalyzer {
                 boolean endMatch = endDate.isEmpty() || logDateTime.compareTo(endDate) <= 0;
 
                 if (keywordMatch && startMatch && endMatch) {
-                    System.out.println(line);
+
+                    // Color output
+                    if (line.contains("ERROR"))
+                        System.out.println(RED + line + RESET);
+                    else if (line.contains("WARNING"))
+                        System.out.println(YELLOW + line + RESET);
+                    else
+                        System.out.println(GREEN + line + RESET);
+
+                    writer.write(line + "\n");
                 }
             }
 
-            reader.close();
+            // Summary
+            writer.write("\n------ Log Summary ------\n");
+            writer.write("INFO Count    : " + infoCount + "\n");
+            writer.write("WARNING Count : " + warningCount + "\n");
+            writer.write("ERROR Count   : " + errorCount + "\n");
 
             System.out.println("\n------ Log Summary ------");
             System.out.println("INFO Count    : " + infoCount);
             System.out.println("WARNING Count : " + warningCount);
             System.out.println("ERROR Count   : " + errorCount);
 
+            reader.close();
+            writer.close();
+
+            System.out.println("\nReport saved to: " + outputFilePath);
+
         } catch (IOException e) {
-            System.out.println("Error reading file: " + e.getMessage());
+            System.out.println("Error: " + e.getMessage());
         }
 
         scanner.close();
