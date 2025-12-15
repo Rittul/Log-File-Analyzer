@@ -1,14 +1,11 @@
 package com.loganalyzer;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.Scanner;
 
 public class LogFileAnalyzer {
 
-    // Color codes for CLI
+    // Color codes
     public static final String RESET = "\u001B[0m";
     public static final String RED = "\u001B[31m";
     public static final String GREEN = "\u001B[32m";
@@ -16,14 +13,19 @@ public class LogFileAnalyzer {
 
     public static void main(String[] args) {
 
-        String logFilePath = "logs/sample.log";
-        String outputFilePath = "output/analysis_report.txt";
+        Scanner scanner = new Scanner(System.in);
+
+        // 1️⃣ Take log file path from user
+        System.out.print("Enter log file path: ");
+        String logFilePath = scanner.nextLine();
+
+        // 2️⃣ Output directory & file
+        String outputDir = "output";
+        String outputFilePath = outputDir + "/analysis_report.txt";
 
         int infoCount = 0;
         int warningCount = 0;
         int errorCount = 0;
-
-        Scanner scanner = new Scanner(System.in);
 
         System.out.print("Enter keyword (or press Enter to skip): ");
         String keyword = scanner.nextLine();
@@ -35,6 +37,12 @@ public class LogFileAnalyzer {
         String endDate = scanner.nextLine();
 
         try {
+            // 3️⃣ Create output folder automatically if not exists
+            File dir = new File(outputDir);
+            if (!dir.exists()) {
+                dir.mkdir();
+            }
+
             BufferedReader reader = new BufferedReader(new FileReader(logFilePath));
             FileWriter writer = new FileWriter(outputFilePath);
 
@@ -51,6 +59,7 @@ public class LogFileAnalyzer {
                 else if (line.contains("ERROR")) errorCount++;
 
                 // Extract date-time
+                if (line.length() < 19) continue;
                 String logDateTime = line.substring(0, 19);
 
                 boolean keywordMatch = keyword.isEmpty() || line.contains(keyword);
@@ -85,7 +94,7 @@ public class LogFileAnalyzer {
             reader.close();
             writer.close();
 
-            System.out.println("\nReport saved to: " + outputFilePath);
+            System.out.println("\nReport saved at: " + outputFilePath);
 
         } catch (IOException e) {
             System.out.println("Error: " + e.getMessage());

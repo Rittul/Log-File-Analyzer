@@ -1,11 +1,4 @@
-Filtered Logs:
-
 2025-01-11 09:00:00 INFO Server started
 2025-01-11 09:05:10 ERROR Database connection failed
 2025-01-11 09:10:45 WARNING High CPU usage
 2025-01-11 09:10:49 WARNING High GPU usage
-
------- Log Summary ------
-INFO Count    : 1
-WARNING Count : 2
-ERROR Count   : 1
